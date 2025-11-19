@@ -2,6 +2,9 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+
+    // Add the Google services Gradle plugin
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -56,4 +59,15 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    // Import Firebase BoM
+    implementation(platform("com.google.firebase:firebase-bom:34.6.0"))
+
+    // Tambahkan library Firebase yang dibutuhkan (tanpa versi)
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-auth") // Untuk Login/Register
+    implementation("com.google.firebase:firebase-firestore") // Untuk Database
+
+    // Dependensi Google Sign In (Wajib untuk fitur Login Google)
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
 }
