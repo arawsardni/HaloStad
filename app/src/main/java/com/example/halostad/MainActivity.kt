@@ -1,49 +1,34 @@
 package com.example.halostad
 
 import android.os.Bundle
-import android.util.Log // Tambahan untuk Logcat
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.halostad.ui.auth.LoginScreen
+import com.example.halostad.ui.auth.RegisterScreen
+import com.example.halostad.ui.home.HomeScreen
+import com.example.halostad.ui.navigation.Screen
 import com.example.halostad.ui.theme.HaloStadTheme
-// Tambahan Import Firebase
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
-        // --- KODE TEST FIREBASE (MULAI) ---
-        try {
-            // Kita coba panggil instance Auth.
-            // Jika error, berarti setup google-services.json atau gradle salah.
-            val auth = Firebase.auth
-
-            // Mencetak pesan sukses ke Logcat
-            Log.d("CEK_FIREBASE", "Sukses! Firebase Auth sudah aktif.")
-            Log.d("CEK_FIREBASE", "Current User: ${auth.currentUser}") // Harusnya null karena belum login
-
-        } catch (e: Exception) {
-            Log.e("CEK_FIREBASE", "Error: Gagal inisialisasi Firebase", e)
-        }
-        // --- KODE TEST FIREBASE (SELESAI) ---
-
         setContent {
             HaloStadTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "HaloStad", // Ubah sedikit biar kelihatan bedanya
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    HaloStadApp()
                 }
             }
         }
@@ -51,17 +36,36 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+fun HaloStadApp() {
+    // 1. Inisialisasi NavController (Pengatur lalu lintas halaman)
+    val navController = rememberNavController()
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    HaloStadTheme {
-        Greeting("HaloStad")
+    // 2. Cek status login pengguna saat ini
+    val currentUser = AppModule.authRepository.getCurrentUser()
+
+    // 3. Tentukan halaman awal: Kalau sudah login -> Home, kalau belum -> Login
+    val startDestination = if (currentUser != null) {
+        Screen.Home.route
+    } else {
+        Screen.Login.route
+    }
+
+    // 4. Definisi NavHost (Peta Navigasi)
+    NavHost(navController = navController, startDestination = startDestination) {
+
+        // Rute ke Halaman Login
+        composable(route = Screen.Login.route) {
+            LoginScreen(navController = navController)
+        }
+
+        // Rute ke Halaman Register
+        composable(route = Screen.Register.route) {
+            RegisterScreen(navController = navController)
+        }
+
+        // Rute ke Halaman Home
+        composable(route = Screen.Home.route) {
+            HomeScreen(navController = navController)
+        }
     }
 }
