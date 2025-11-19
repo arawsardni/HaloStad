@@ -16,6 +16,8 @@ import com.example.halostad.ui.auth.LoginScreen
 import com.example.halostad.ui.auth.RegisterScreen
 import com.example.halostad.ui.home.HomeScreen
 import com.example.halostad.ui.navigation.Screen
+import com.example.halostad.ui.post.CreatePostScreen
+import com.example.halostad.ui.post.FeedScreen
 import com.example.halostad.ui.theme.HaloStadTheme
 
 class MainActivity : ComponentActivity() {
@@ -66,6 +68,16 @@ fun HaloStadApp() {
         // Rute ke Halaman Home
         composable(route = Screen.Home.route) {
             HomeScreen(navController = navController)
+        }
+
+        // 2. Route Feed
+        composable(route = Screen.Feed.route) {
+            FeedScreen(navController = navController)
+        }
+
+        // 3. Route Create Post
+        composable(route = Screen.CreatePost.route) {
+            CreatePostScreen(navController = navController)
         }
     }
 }

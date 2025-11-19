@@ -1,6 +1,7 @@
 package com.example.halostad.data.model
 
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.PropertyName
 
 data class Post(
     val id: String = "",
@@ -11,6 +12,7 @@ data class Post(
     val timestamp: Timestamp = Timestamp.now(),
 
     // Bagian Jawaban Ustadz
+    @get:PropertyName("isAnswered")
     val isAnswered: Boolean = false,
     val answer: String? = null,
     val ustadzId: String? = null,

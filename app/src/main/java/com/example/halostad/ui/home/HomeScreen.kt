@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.halostad.AppModule
@@ -103,7 +104,11 @@ fun HomeScreen(
             // --- KARTU JADWAL SHOLAT ---
             if (locationPermissionsState.allPermissionsGranted) {
                 if (jadwalSholat != null) {
-                    PrayerTimeCard(jadwal = jadwalSholat!!)
+                    // UBAH BAGIAN INI:
+                    PrayerTimeCard(
+                        jadwal = jadwalSholat!!,
+                        onForumClick = { navController.navigate(Screen.Feed.route) } // <--- Masukkan navigasi di sini
+                    )
                 } else if (!isLoading) {
                     Text("Tekan tombol refresh untuk memuat data.")
                 }
@@ -138,7 +143,10 @@ fun HomeScreen(
 }
 
 @Composable
-fun PrayerTimeCard(jadwal: PrayerTimeHelper.JadwalSholat) {
+fun PrayerTimeCard(
+    jadwal: PrayerTimeHelper.JadwalSholat,
+    onForumClick: () -> Unit // <--- 1. Tambahkan Parameter Ini
+) {
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
@@ -150,7 +158,6 @@ fun PrayerTimeCard(jadwal: PrayerTimeHelper.JadwalSholat) {
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
-            // MENAMPILKAN LOKASI NYATA DI SINI
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = "📍 ${jadwal.lokasi}",
@@ -170,9 +177,21 @@ fun PrayerTimeCard(jadwal: PrayerTimeHelper.JadwalSholat) {
             PrayerTimeRow("Maghrib", jadwal.maghrib)
             HorizontalDivider(color = Color.Gray.copy(alpha = 0.2f))
             PrayerTimeRow("Isya", jadwal.isya)
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Button(
+                onClick = onForumClick, // <--- 2. Panggil di sini (navController dihapus dari sini)
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("Masuk ke Forum Tanya Jawab", fontSize = 16.sp)
+            }
         }
     }
 }
+
+
 
 @Composable
 fun PrayerTimeRow(name: String, time: String) {
