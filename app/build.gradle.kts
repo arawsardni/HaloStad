@@ -84,4 +84,7 @@ dependencies {
 
     // 3. Accompanist Permission (Agar minta izin lokasi di Compose lebih mudah)
     implementation("com.google.accompanist:accompanist-permissions:0.34.0")
+
+    // 2. Coil (Untuk menampilkan gambar dari URL)
+    implementation("io.coil-kt:coil-compose:2.6.0")
 }

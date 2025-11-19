@@ -11,7 +11,7 @@ import kotlinx.coroutines.tasks.await
 
 class AuthRepositoryImpl(
     private val auth: FirebaseAuth,
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
 ) : AuthRepository {
 
     // --- LOGIKA LOGIN ---
@@ -77,6 +77,43 @@ class AuthRepositoryImpl(
 
         } catch (e: Exception) {
             trySend(UiState.Error(e.localizedMessage ?: "Gagal mendaftar"))
+        }
+        awaitClose { }
+    }
+
+    override suspend fun updateProfile(name: String, photoBase64: String?): Flow<UiState<Boolean>> = callbackFlow {
+        trySend(UiState.Loading)
+        try {
+            val user = auth.currentUser
+            if (user == null) {
+                trySend(UiState.Error("User tidak ditemukan"))
+                close()
+                return@callbackFlow
+            }
+
+            // 1. Update Nama di Firebase Auth (Agar sesi login terupdate)
+            val profileUpdates = com.google.firebase.auth.UserProfileChangeRequest.Builder()
+                .setDisplayName(name)
+                // Kita TIDAK update PhotoURL di Auth karena Auth tidak support Base64 panjang
+                .build()
+            user.updateProfile(profileUpdates).await()
+
+            // 2. Update Nama & Foto di Firestore (Database)
+            val updates = mutableMapOf<String, Any>(
+                "name" to name
+            )
+
+            // Hanya update foto jika ada foto baru yang dikirim
+            if (photoBase64 != null) {
+                updates["photoBase64"] = photoBase64
+            }
+
+            firestore.collection("users").document(user.uid).update(updates).await()
+
+            trySend(UiState.Success(true))
+
+        } catch (e: Exception) {
+            trySend(UiState.Error(e.localizedMessage ?: "Gagal update profil"))
         }
         awaitClose { }
     }

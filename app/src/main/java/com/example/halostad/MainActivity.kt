@@ -104,6 +104,11 @@ fun MainApp() {
 
             // Halaman Lain (Tanpa Bottom Bar)
             composable(Screen.CreatePost.route) { CreatePostScreen(navController) }
+
+            // ... di dalam NavHost ...
+            composable(Screen.EditProfile.route) {
+                com.example.halostad.ui.profile.EditProfileScreen(navController)
+            }
         }
     }
 }

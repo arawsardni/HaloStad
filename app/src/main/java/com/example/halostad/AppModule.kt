@@ -12,11 +12,13 @@ object AppModule {
     private val firestore: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
 
     val authRepository: AuthRepository by lazy {
-        AuthRepositoryImpl(auth, firestore)
+        AuthRepositoryImpl(auth, firestore) // Hapus parameter 'storage'
     }
 
     // --- TAMBAHAN UNTUK MILESTONE 2 ---
     val postRepository: PostRepository by lazy {
         PostRepositoryImpl(firestore)
     }
+
+
 }

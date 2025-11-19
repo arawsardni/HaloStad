@@ -15,4 +15,7 @@ interface AuthRepository {
 
     // Cek apakah user sedang login (untuk auto-login saat buka aplikasi)
     fun getCurrentUser(): com.google.firebase.auth.FirebaseUser?
+
+    // Ubah baris updateProfile menjadi:
+    suspend fun updateProfile(name: String, photoBase64: String?): Flow<UiState<Boolean>>
 }

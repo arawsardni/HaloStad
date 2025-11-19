@@ -125,7 +125,7 @@ fun HomeScreen(
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
-            }
+            }   
         }
     }
 }
