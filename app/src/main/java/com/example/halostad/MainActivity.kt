@@ -5,12 +5,20 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.halostad.ui.auth.LoginScreen
 import com.example.halostad.ui.auth.RegisterScreen
@@ -18,6 +26,7 @@ import com.example.halostad.ui.home.HomeScreen
 import com.example.halostad.ui.navigation.Screen
 import com.example.halostad.ui.post.CreatePostScreen
 import com.example.halostad.ui.post.FeedScreen
+import com.example.halostad.ui.profile.ProfileScreen
 import com.example.halostad.ui.theme.HaloStadTheme
 
 class MainActivity : ComponentActivity() {
@@ -26,58 +35,82 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             HaloStadTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    HaloStadApp()
-                }
+                MainApp()
             }
         }
     }
 }
 
 @Composable
-fun HaloStadApp() {
-    // 1. Inisialisasi NavController (Pengatur lalu lintas halaman)
+fun MainApp() {
     val navController = rememberNavController()
 
-    // 2. Cek status login pengguna saat ini
+    // Cek user login
     val currentUser = AppModule.authRepository.getCurrentUser()
+    val startDestination = if (currentUser != null) Screen.Home.route else Screen.Login.route
 
-    // 3. Tentukan halaman awal: Kalau sudah login -> Home, kalau belum -> Login
-    val startDestination = if (currentUser != null) {
-        Screen.Home.route
-    } else {
-        Screen.Login.route
-    }
+    // Daftar Item Bottom Bar
+    val items = listOf(
+        BottomNavItem("Beranda", Screen.Home.route, Icons.Default.Home),
+        BottomNavItem("Tanya Jawab", Screen.Feed.route, Icons.Default.List),
+        BottomNavItem("Profil", Screen.Profile.route, Icons.Default.Person)
+    )
 
-    // 4. Definisi NavHost (Peta Navigasi)
-    NavHost(navController = navController, startDestination = startDestination) {
+    // Logic: Sembunyikan BottomBar di halaman Login, Register, dan CreatePost
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
+    val showBottomBar = items.any { it.route == currentDestination?.route }
 
-        // Rute ke Halaman Login
-        composable(route = Screen.Login.route) {
-            LoginScreen(navController = navController)
+    Scaffold(
+        bottomBar = {
+            if (showBottomBar) {
+                NavigationBar {
+                    items.forEach { item ->
+                        val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
+                        NavigationBarItem(
+                            icon = { Icon(item.icon, contentDescription = item.label) },
+                            label = { Text(item.label) },
+                            selected = selected,
+                            onClick = {
+                                navController.navigate(item.route) {
+                                    // Pop up ke start destination agar tidak menumpuk stack
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    // Hindari duplikasi halaman jika diklik berulang
+                                    launchSingleTop = true
+                                    // Restore state (misal posisi scroll)
+                                    restoreState = true
+                                }
+                            }
+                        )
+                    }
+                }
+            }
         }
+    ) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = startDestination,
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            composable(Screen.Login.route) { LoginScreen(navController) }
+            composable(Screen.Register.route) { RegisterScreen(navController) }
 
-        // Rute ke Halaman Register
-        composable(route = Screen.Register.route) {
-            RegisterScreen(navController = navController)
-        }
+            // Halaman Utama (Ada Bottom Bar)
+            composable(Screen.Home.route) { HomeScreen(navController) }
+            composable(Screen.Feed.route) { FeedScreen(navController) }
+            composable(Screen.Profile.route) { ProfileScreen(navController) }
 
-        // Rute ke Halaman Home
-        composable(route = Screen.Home.route) {
-            HomeScreen(navController = navController)
-        }
-
-        // 2. Route Feed
-        composable(route = Screen.Feed.route) {
-            FeedScreen(navController = navController)
-        }
-
-        // 3. Route Create Post
-        composable(route = Screen.CreatePost.route) {
-            CreatePostScreen(navController = navController)
+            // Halaman Lain (Tanpa Bottom Bar)
+            composable(Screen.CreatePost.route) { CreatePostScreen(navController) }
         }
     }
 }
+
+// Data class sederhana untuk item navigasi
+data class BottomNavItem(
+    val label: String,
+    val route: String,
+    val icon: androidx.compose.ui.graphics.vector.ImageVector
+)

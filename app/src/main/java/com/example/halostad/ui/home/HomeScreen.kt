@@ -126,18 +126,6 @@ fun HomeScreen(
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
             }
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            OutlinedButton(
-                onClick = {
-                    AppModule.authRepository.logout()
-                    navController.navigate(Screen.Login.route) { popUpTo(0) }
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Keluar Akun")
-            }
         }
     }
 }
@@ -178,15 +166,6 @@ fun PrayerTimeCard(
             HorizontalDivider(color = Color.Gray.copy(alpha = 0.2f))
             PrayerTimeRow("Isya", jadwal.isya)
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Button(
-                onClick = onForumClick, // <--- 2. Panggil di sini (navController dihapus dari sini)
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text("Masuk ke Forum Tanya Jawab", fontSize = 16.sp)
-            }
         }
     }
 }
