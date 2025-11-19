@@ -72,4 +72,16 @@ dependencies {
 
     // Dependensi Google Sign In (Wajib untuk fitur Login Google)
     implementation("com.google.android.gms:play-services-auth:21.2.0")
+
+    // 1. Library Perhitungan Waktu Sholat (Adhan)
+    implementation("com.batoulapps.adhan:adhan2:0.0.6")
+
+    // Library Date-Time versi terbaru
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
+
+    // 2. Library untuk mengambil Lokasi GPS (Google Play Services)
+    implementation("com.google.android.gms:play-services-location:21.2.0")
+
+    // 3. Accompanist Permission (Agar minta izin lokasi di Compose lebih mudah)
+    implementation("com.google.accompanist:accompanist-permissions:0.34.0")
 }
