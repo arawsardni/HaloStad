@@ -18,6 +18,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
@@ -26,11 +27,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -80,7 +84,8 @@ fun EditProfileScreen(
                         try {
                             val cleanBase64 = base64String.substringAfter(",")
                             val decodedBytes = Base64.decode(cleanBase64, Base64.DEFAULT)
-                            val bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+                            val bitmap =
+                                BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
                             currentImageBitmap = bitmap
                         } catch (e: Exception) {
                             e.printStackTrace()
@@ -126,81 +131,126 @@ fun EditProfileScreen(
             viewModel.resetState()
             navController.popBackStack()
         } else if (updateState is UiState.Error) {
-            Toast.makeText(context, (updateState as UiState.Error).message, Toast.LENGTH_LONG).show()
+            Toast.makeText(context, (updateState as UiState.Error).message, Toast.LENGTH_LONG)
+                .show()
             viewModel.resetState()
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Edit Profil") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
-                    }
-                }
-            )
-        }
-    ) { innerPadding ->
-        Column(
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF5F5F5))
+    ) {
+
+        Box(
             modifier = Modifier
-                .padding(innerPadding)
-                .padding(16.dp)
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxWidth()
+                .height(220.dp)
+                .background(
+                    brush = Brush.verticalGradient(
+                        listOf(Color(0xFF2D8A5B), Color(0xFF16A34A))
+                    ),
+                    shape = RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp)
+                )
         ) {
-            // --- FOTO PROFIL ---
-            Box(
-                contentAlignment = Alignment.BottomEnd,
-                modifier = Modifier.size(120.dp)
+            Row(
+                modifier = Modifier
+                    .padding(20.dp)
+                    .align(Alignment.TopStart),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // LOGIKA PRIORITAS TAMPILAN GAMBAR:
-                // 1. Jika user baru ambil foto (Selected) -> Tampilkan Selected
-                // 2. Jika tidak, tapi ada data dari DB (Current) -> Tampilkan Current
-                // 3. Jika tidak ada keduanya -> Tampilkan Default Avatar
-
-                if (selectedBitmap != null) {
-                    Image(
-                        bitmap = selectedBitmap!!.asImageBitmap(),
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize().clip(CircleShape).border(2.dp, Color.Gray, CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
-                } else if (currentImageBitmap != null) {
-                    Image(
-                        bitmap = currentImageBitmap!!.asImageBitmap(),
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize().clip(CircleShape).border(2.dp, Color.Gray, CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
-                } else {
-                    AsyncImage(
-                        model = "https://ui-avatars.com/api/?name=${name}",
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize().clip(CircleShape).border(2.dp, Color.Gray, CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = null, tint = Color.White)
                 }
 
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary)
-                        .padding(6.dp)
-                        .size(20.dp)
+                Spacer(modifier = Modifier.width(4.dp))
+
+                Text(
+                    "Edit Profil",
+                    color = Color.White,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = { galleryLauncher.launch("image/*") }) { Text("Galeri") }
+                // FOTO PROFIL YANG SAMA DENGAN PROFILESCREEN
+                Box(
+                    modifier = Modifier
+                        .size(110.dp)
+                        .clip(CircleShape)
+                        .background(Color.LightGray)
+                        .border(3.dp, Color.White, CircleShape)
+                        .clickable {
+                            // TODO: buka image picker
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (selectedBitmap != null) {
+                        Image(
+                            bitmap = selectedBitmap!!.asImageBitmap(),
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize().clip(CircleShape)
+                                .border(2.dp, Color.Gray, CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else if (currentImageBitmap != null) {
+                        Image(
+                            bitmap = currentImageBitmap!!.asImageBitmap(),
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize().clip(CircleShape)
+                                .border(2.dp, Color.Gray, CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        AsyncImage(
+                            model = "https://ui-avatars.com/api/?name=${name}",
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize().clip(CircleShape)
+                                .border(2.dp, Color.Gray, CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
 
-                OutlinedButton(onClick = {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary)
+                            .padding(6.dp)
+                            .size(20.dp)
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // ======================================================
+        // ==================== FORM TEXT ========================
+        // ======================================================
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            OutlinedButton(onClick = { galleryLauncher.launch("image/*") }) {
+                Text("Galeri")
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            OutlinedButton(
+                onClick = {
                     if (cameraPermissionState.status.isGranted) {
                         cameraLauncher.launch()
                     } else {
@@ -209,37 +259,64 @@ fun EditProfileScreen(
                         }
                         cameraPermissionState.launchPermissionRequest()
                     }
-                }) {
-                    Text("Kamera")
                 }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("Nama Lengkap") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Button(
-                onClick = {
-                    // Hanya kirim base64Image jika user memilih gambar BARU (selectedBitmap tidak null)
-                    // Jika null, kirim null ke ViewModel (Repository akan abaikan update foto)
-                    val base64Image = selectedBitmap?.let { ImageHelper.bitmapToBase64(it) }
-                    viewModel.updateProfile(name, base64Image)
-                },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = updateState !is UiState.Loading
             ) {
-                if (updateState is UiState.Loading) {
-                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
-                } else {
-                    Text("Simpan Perubahan")
-                }
+                Text("Kamera")
+            }
+        }
+        Spacer(modifier = Modifier.height(24.dp))
+        Card(
+            modifier = Modifier
+                .padding(horizontal = 20.dp)
+                .fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            elevation = CardDefaults.cardElevation(6.dp)
+        ) {
+
+            Column(modifier = Modifier.padding(20.dp)) {
+
+                Text("Nama", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                Spacer(modifier = Modifier.height(6.dp))
+
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    leadingIcon = {
+                        Icon(Icons.Default.Edit, contentDescription = null)
+                    },
+                    shape = RoundedCornerShape(14.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(30.dp))
+
+        // ======================================================
+        // ==============  BUTTON SIMPAN (HIJAU)  ================
+        // ======================================================
+
+        Button(
+            onClick = {
+                // Hanya kirim base64Image jika user memilih gambar BARU (selectedBitmap tidak null)
+                // Jika null, kirim null ke ViewModel (Repository akan abaikan update foto)
+                val base64Image = selectedBitmap?.let { ImageHelper.bitmapToBase64(it) }
+                viewModel.updateProfile(name, base64Image)
+            },
+            modifier = Modifier
+                .padding(horizontal = 20.dp)
+                .fillMaxWidth()
+                .height(55.dp),
+            shape = RoundedCornerShape(20.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF2D8A5B),
+                contentColor = Color.White
+            )
+        ) {
+            if (updateState is UiState.Loading) {
+                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+            } else {
+                Text("Simpan Perubahan")
             }
         }
     }
