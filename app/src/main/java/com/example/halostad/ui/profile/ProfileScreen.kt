@@ -9,8 +9,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -175,7 +177,7 @@ fun ProfileScreen(navController: NavController) {
                     subtitle = "Pengingat waktu sholat"
                 )
 
-                Divider()
+                HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
                 ProfileSettingItem(
                     icon = Icons.Default.DarkMode,
@@ -192,7 +194,7 @@ fun ProfileScreen(navController: NavController) {
                     showArrow = true
                 )
 
-                Divider()
+                HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
                 ProfileSettingItem(
                     icon = Icons.Default.Help,
@@ -261,7 +263,7 @@ fun ProfileSettingItem(
         }
 
         if (showArrow) {
-            Icon(Icons.Default.KeyboardArrowRight, contentDescription = null, tint = Color.Gray)
+            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = Color.Gray)
         }
     }
 }

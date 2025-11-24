@@ -87,4 +87,7 @@ dependencies {
 
     // 2. Coil (Untuk menampilkan gambar dari URL)
     implementation("io.coil-kt:coil-compose:2.6.0")
+
+    implementation("androidx.compose.material:material-icons-extended-android:1.7.8") // Cek versi terbaru jika perlu
+
 }
