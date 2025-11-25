@@ -1,14 +1,20 @@
 package com.example.halostad.ui.home
 
 import android.Manifest
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -35,6 +41,10 @@ fun HomeScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val currentUser = AppModule.authRepository.getCurrentUser()
 
+    val displayName = currentUser?.displayName
+        ?: currentUser?.email?.substringBefore("@")
+        ?: "User"
+
     val locationPermissionsState = rememberMultiplePermissionsState(
         permissions = listOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
@@ -42,7 +52,7 @@ fun HomeScreen(
         )
     )
 
-    // Efek awal: Ambil data saat pertama buka
+    // Ambil lokasi & jadwal saat izin sudah dikasih
     LaunchedEffect(key1 = locationPermissionsState.allPermissionsGranted) {
         if (locationPermissionsState.allPermissionsGranted) {
             viewModel.getUserLocationAndPrayerTimes(context)
@@ -61,7 +71,8 @@ fun HomeScreen(
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // --- HEADER DENGAN TOMBOL REFRESH ---
+
+            // (opsional) header kecil di atas
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -74,13 +85,12 @@ fun HomeScreen(
                         color = MaterialTheme.colorScheme.secondary
                     )
                     Text(
-                        text = currentUser?.displayName ?: currentUser?.email?.substringBefore("@") ?: "User",
+                        text = displayName,
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
                 }
 
-                // Tombol Refresh
                 IconButton(
                     onClick = {
                         if (locationPermissionsState.allPermissionsGranted) {
@@ -92,22 +102,27 @@ fun HomeScreen(
                     enabled = !isLoading
                 ) {
                     if (isLoading) {
-                        CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            strokeWidth = 2.dp
+                        )
                     } else {
-                        Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh Lokasi")
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "Refresh Lokasi"
+                        )
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // --- KARTU JADWAL SHOLAT ---
             if (locationPermissionsState.allPermissionsGranted) {
                 if (jadwalSholat != null) {
-                    // UBAH BAGIAN INI:
                     PrayerTimeCard(
                         jadwal = jadwalSholat!!,
-                        onForumClick = { navController.navigate(Screen.Feed.route) } // <--- Masukkan navigasi di sini
+                        userName = displayName,
+                        onForumClick = { navController.navigate(Screen.Feed.route) }
                     )
                 } else if (!isLoading) {
                     Text("Tekan tombol refresh untuk memuat data.")
@@ -125,7 +140,11 @@ fun HomeScreen(
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
-            }   
+            }
+
+            // Di bawah sini nanti bisa kamu tambah:
+            // - Masjid terdekat
+            // - Artikel terbaru
         }
     }
 }
@@ -133,54 +152,163 @@ fun HomeScreen(
 @Composable
 fun PrayerTimeCard(
     jadwal: PrayerTimeHelper.JadwalSholat,
-    onForumClick: () -> Unit // <--- 1. Tambahkan Parameter Ini
+    userName: String,
+    onForumClick: () -> Unit // belum dipakai, tapi disiapkan kalau mau tombol ke forum
 ) {
     Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFEFF9F1) // hijau muda
+        ),
         modifier = Modifier.fillMaxWidth()
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = "Jadwal Sholat Hari Ini",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "📍 ${jadwal.lokasi}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-                )
+        Column {
+            // ===== HEADER KARTU (HIJAU) =====
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        brush = Brush.horizontalGradient(
+                            listOf(
+                                Color(0xFF22C55E),
+                                Color(0xFF16A34A)
+                            )
+                        ),
+                        shape = RoundedCornerShape(
+                            topStart = 24.dp,
+                            topEnd = 24.dp,
+                            bottomStart = 0.dp,
+                            bottomEnd = 0.dp
+                        )
+                    )
+                    .padding(16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = userName,
+                            color = Color.White,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Assalamu'alaikum",
+                            color = Color.White.copy(alpha = 0.8f),
+                            fontSize = 12.sp
+                        )
+                    }
+
+                    // lingkaran kecil dengan ikon refresh (bisa diganti notif)
+                    Surface(
+                        shape = CircleShape,
+                        color = Color.White.copy(alpha = 0.18f)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            tint = Color.White,
+                            contentDescription = "Refresh"
+                        )
+                    }
+                }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            // ===== KONTEN JADWAL SHOLAT =====
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "Waktu Sholat",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Hari ini",
+                            fontSize = 12.sp,
+                            color = Color.Gray
+                        )
+                    }
 
-            PrayerTimeRow("Subuh", jadwal.subuh)
-            HorizontalDivider(color = Color.Gray.copy(alpha = 0.2f))
-            PrayerTimeRow("Dzuhur", jadwal.dzuhur)
-            HorizontalDivider(color = Color.Gray.copy(alpha = 0.2f))
-            PrayerTimeRow("Ashar", jadwal.ashar)
-            HorizontalDivider(color = Color.Gray.copy(alpha = 0.2f))
-            PrayerTimeRow("Maghrib", jadwal.maghrib)
-            HorizontalDivider(color = Color.Gray.copy(alpha = 0.2f))
-            PrayerTimeRow("Isya", jadwal.isya)
+                    Text(
+                        text = jadwal.lokasi,
+                        fontSize = 12.sp,
+                        color = Color.Gray
+                    )
+                }
 
+                Spacer(modifier = Modifier.height(16.dp))
+
+                PrayerTimeRow("Subuh", jadwal.subuh)
+                PrayerTimeRow("Dzuhur", jadwal.dzuhur)
+                PrayerTimeRow("Ashar", jadwal.ashar)
+                PrayerTimeRow("Maghrib", jadwal.maghrib)
+                PrayerTimeRow("Isya", jadwal.isya)
+            }
         }
     }
 }
 
-
-
 @Composable
 fun PrayerTimeRow(name: String, time: String) {
-    Row(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
+            .padding(bottom = 8.dp),
+        shape = RoundedCornerShape(50),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Text(text = name, style = MaterialTheme.typography.bodyLarge)
-        Text(text = time, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // lingkaran kecil di kiri (bisa diganti ikon)
+                Surface(
+                    shape = CircleShape,
+                    color = Color(0xFFDFF7E3),
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = name.first().toString(),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF16A34A)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Text(
+                    text = name,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+
+            Text(
+                text = time,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
 }
