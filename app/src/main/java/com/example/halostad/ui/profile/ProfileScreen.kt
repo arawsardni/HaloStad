@@ -217,7 +217,9 @@ fun ProfileScreen(navController: NavController) {
                         icon = Icons.Default.Help,
                         title = "Riwayat Tanya Ustad",
                         subtitle = "12 pertanyaan",
-                        onClick = {},
+                        onClick = {
+                            navController.navigate(Screen.RiwayatTanya.route)
+                        },
                         iconBackground = Color(0xFFE8F5E9)
                     )
 

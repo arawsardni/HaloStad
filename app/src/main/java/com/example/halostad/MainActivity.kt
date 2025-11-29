@@ -27,6 +27,7 @@ import com.example.halostad.ui.navigation.Screen
 import com.example.halostad.ui.post.CreatePostScreen
 import com.example.halostad.ui.post.FeedScreen
 import com.example.halostad.ui.profile.ProfileScreen
+import com.example.halostad.ui.profile.RiwayatTanyaScreen
 import com.example.halostad.ui.theme.HaloStadTheme
 
 class MainActivity : ComponentActivity() {
@@ -102,12 +103,16 @@ fun MainApp() {
             composable(Screen.Feed.route) { FeedScreen(navController) }
             composable(Screen.Profile.route) { ProfileScreen(navController) }
 
+
             // Halaman Lain (Tanpa Bottom Bar)
             composable(Screen.CreatePost.route) { CreatePostScreen(navController) }
 
             // ... di dalam NavHost ...
             composable(Screen.EditProfile.route) {
                 com.example.halostad.ui.profile.EditProfileScreen(navController)
+            }
+            composable(Screen.RiwayatTanya.route) {
+                RiwayatTanyaScreen(navController)
             }
         }
     }
